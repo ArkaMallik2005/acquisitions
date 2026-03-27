@@ -1,9 +1,42 @@
 import express from 'express';
+import authRoutes from "./routes/auth.routes.js";
+import logger from './config/logger.js';
+import helmet from "helmet";
+import morgan from 'morgan';
+import cors from 'cors';
+import cookieParser from 'cookie-parser';
 
 const app = express();
 
+
+app.use(helmet());
+app.use(cors());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
+
+app.use(morgan('combined', { stream: { write: message => logger.info(message.trim()) } }));
+
 app.get('/', (req, res) => {
-  res.status(200).json({ message: 'Hello from acquisitions!' });
+  logger.info('Hello from Acquisition!');
+  res.status(200).send('Hello from acquisitions!');
+});
+
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'ok', timestamp: new Date().toISOString(),uptime: process.uptime() });
+});
+
+app.get('/api', (req, res) => {
+  res.status(200).json({ message: 'Welcome to the API!' });
+});
+
+app.use('/api/auth', authRoutes);
+
+// Global error handler
+app.use((err, req, res, next) => {
+  logger.error(err.message, { stack: err.stack });
+  const status = err.status || err.statusCode || 500;
+  res.status(status).json({ error: err.message || 'Internal Server Error' });
 });
 
 export default app;
