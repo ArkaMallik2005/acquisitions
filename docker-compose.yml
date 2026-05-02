@@ -1,0 +1,31 @@
+services:
+  app:
+    build:
+      context: .
+      target: development
+    command: npm run dev
+    environment:
+      PORT: ${PORT:-3000}
+      NODE_ENV: ${NODE_ENV:-development}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      DATABASE_URL: ${DATABASE_URL}
+      ARCJET_KEY: ${ARCJET_KEY:-}
+    ports:
+      - "${PORT:-3000}:3000"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    depends_on:
+      - neon-local
+    restart: unless-stopped
+
+  neon-local:
+    image: neondatabase/neon_local:latest
+    environment:
+      NEON_API_KEY: ${NEON_API_KEY}
+      NEON_PROJECT_ID: ${NEON_PROJECT_ID}
+      PARENT_BRANCH_ID: ${PARENT_BRANCH_ID}
+      DELETE_BRANCH: ${DELETE_BRANCH:-true}
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
