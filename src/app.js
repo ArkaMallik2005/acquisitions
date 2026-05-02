@@ -1,5 +1,6 @@
 import express from 'express';
 import authRoutes from "./routes/auth.routes.js";
+import userRoutes from './routes/users.routes.js';
 import logger from './config/logger.js';
 import helmet from "helmet";
 import morgan from 'morgan';
@@ -34,6 +35,7 @@ app.get('/api', (req, res) => {
 });
 
 app.use('/api/auth', authRoutes);
+app.use('/api/users', userRoutes);
 
 // Global error handler
 app.use((err, req, res, next) => {
