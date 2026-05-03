@@ -1,0 +1,120 @@
+name: Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    env:
+      NODE_ENV: test
+      NODE_OPTIONS: --experimental-vm-modules
+      DATABASE_URL: postgres://postgres:postgres@localhost:5432/testdb
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests with coverage
+        id: run_tests
+        continue-on-error: true
+        run: npm test -- --ci --coverage --coverageReporters=text-summary --coverageReporters=lcov --coverageReporters=json-summary --json --outputFile=test-results.json
+
+      - name: Upload coverage artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage
+          if-no-files-found: warn
+          retention-days: 30
+
+      - name: Annotate test failures
+        if: steps.run_tests.outcome == 'failure'
+        run: |
+          node <<'EOF'
+          const fs = require('fs');
+          const escapeAnnotation = (value = '') =>
+            value.replace(/%/g, '%25').replace(/\r/g, '%0D').replace(/\n/g, '%0A');
+
+          if (!fs.existsSync('test-results.json')) {
+            console.log('::error title=Tests failed::Test command failed and no JSON test report was generated.');
+            process.exit(0);
+          }
+
+          const results = JSON.parse(fs.readFileSync('test-results.json', 'utf8'));
+          let failureCount = 0;
+
+          for (const suite of results.testResults || []) {
+            for (const assertion of suite.assertionResults || []) {
+              if (assertion.status !== 'failed') continue;
+              failureCount += 1;
+
+              const firstMessage =
+                (assertion.failureMessages && assertion.failureMessages[0]) || 'Assertion failed.';
+              const firstNonEmptyLine =
+                firstMessage.split('\n').find((line) => line.trim().length > 0) || firstMessage;
+              const annotationMessage = `${assertion.fullName}: ${firstNonEmptyLine}`;
+
+              console.log(
+                `::error file=${escapeAnnotation(suite.name)},title=Test failure::${escapeAnnotation(annotationMessage)}`
+              );
+            }
+          }
+
+          if (failureCount === 0) {
+            console.log('::error title=Tests failed::The test run failed before assertion-level failures could be parsed.');
+          }
+          EOF
+
+      - name: Generate test and coverage summary
+        if: always()
+        run: |
+          node <<'EOF'
+          const fs = require('fs');
+          const summaryFile = process.env.GITHUB_STEP_SUMMARY;
+          const lines = ['## Test Results'];
+
+          if (fs.existsSync('test-results.json')) {
+            const results = JSON.parse(fs.readFileSync('test-results.json', 'utf8'));
+            lines.push(`- Total suites: ${results.numTotalTestSuites}`);
+            lines.push(`- Passed suites: ${results.numPassedTestSuites}`);
+            lines.push(`- Failed suites: ${results.numFailedTestSuites}`);
+            lines.push(`- Total tests: ${results.numTotalTests}`);
+            lines.push(`- Passed tests: ${results.numPassedTests}`);
+            lines.push(`- Failed tests: ${results.numFailedTests}`);
+          } else {
+            lines.push('- Test results were not generated.');
+          }
+
+          lines.push('');
+          lines.push('## Coverage');
+
+          if (fs.existsSync('coverage/coverage-summary.json')) {
+            const coverage = JSON.parse(fs.readFileSync('coverage/coverage-summary.json', 'utf8')).total;
+            lines.push(`- Lines: ${coverage.lines.pct}%`);
+            lines.push(`- Statements: ${coverage.statements.pct}%`);
+            lines.push(`- Functions: ${coverage.functions.pct}%`);
+            lines.push(`- Branches: ${coverage.branches.pct}%`);
+          } else {
+            lines.push('- Coverage summary file was not found.');
+          }
+
+          fs.appendFileSync(summaryFile, `${lines.join('\n')}\n`);
+          EOF
+
+      - name: Fail workflow if tests failed
+        if: steps.run_tests.outcome == 'failure'
+        run: exit 1
