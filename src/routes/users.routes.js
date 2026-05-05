@@ -12,7 +12,12 @@
 // export default router;
 
 import express from 'express';
-import { fetchAllUsers, getUserById, updateUser, deleteUser } from '../controllers/users.controller.js';
+import {
+  fetchAllUsers,
+  getUserById,
+  updateUser,
+  deleteUser,
+} from '../controllers/users.controller.js';
 
 const router = express.Router();
 

@@ -1,8 +1,8 @@
-import logger from "../config/logger.js";
-import { createUser, authenticateUser } from "../services/auth.service.js";
-import { signUpSchema } from "../validations/auth.validation.js";
-import { jwttoken } from "../utils/jwt.js";
-import { cookies } from "../utils/cookies.js";
+import logger from '../config/logger.js';
+import { createUser, authenticateUser } from '../services/auth.service.js';
+import { signUpSchema } from '../validations/auth.validation.js';
+import { jwttoken } from '../utils/jwt.js';
+import { cookies } from '../utils/cookies.js';
 
 // 🔐 SIGNUP
 export const signup = async (req, res, next) => {
@@ -11,7 +11,7 @@ export const signup = async (req, res, next) => {
 
     if (!validationResult.success) {
       return res.status(400).json({
-        error: "Validation failed",
+        error: 'Validation failed',
         details: validationResult.error.issues,
       });
     }
@@ -26,24 +26,23 @@ export const signup = async (req, res, next) => {
       email: user.email,
     });
 
-    cookies.set(res, "token", token);
+    cookies.set(res, 'token', token);
 
     logger.info(`User ${email} signed up successfully`);
 
     return res.status(201).json({
-      message: "User signed up successfully",
+      message: 'User signed up successfully',
       id: user.id,
       name: user.name,
       email: user.email,
       role: user.role,
     });
-
   } catch (error) {
-    logger.error("Error in signup controller:", error);
+    logger.error('Error in signup controller:', error);
 
-    if (error.message === "user with email already exists") {
+    if (error.message === 'user with email already exists') {
       return res.status(409).json({
-        error: "User with this email already exists",
+        error: 'User with this email already exists',
       });
     }
 
@@ -58,7 +57,7 @@ export const login = async (req, res, next) => {
 
     if (!email || !password) {
       return res.status(400).json({
-        error: "Email and password are required",
+        error: 'Email and password are required',
       });
     }
 
@@ -70,23 +69,22 @@ export const login = async (req, res, next) => {
       email: user.email,
     });
 
-    cookies.set(res, "token", token);
+    cookies.set(res, 'token', token);
 
     logger.info(`User ${email} logged in successfully`);
 
     return res.status(200).json({
-      message: "Login successful",
+      message: 'Login successful',
       id: user.id,
       name: user.name,
       email: user.email,
       role: user.role,
     });
-
   } catch (error) {
-    logger.error("Error in login controller:", error);
+    logger.error('Error in login controller:', error);
 
     return res.status(401).json({
-      error: "Invalid email or password",
+      error: 'Invalid email or password',
     });
   }
 };

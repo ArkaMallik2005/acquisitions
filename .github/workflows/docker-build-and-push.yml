@@ -9,7 +9,7 @@ jobs:
   docker-build-and-push:
     runs-on: ubuntu-latest
     env:
-      IMAGE_NAME: ${{ secrets.DOCKER_USERNAME }}/${{ github.event.repository.name }}
+      IMAGE_NAME: ${{ secrets.DOCKER_USERNAME }}/kubernetes-demo-api
 
     steps:
       - name: Checkout repository

@@ -16,17 +16,28 @@ export const getAllUsers = async () => {
   try {
     return await db.select(userSelectProjection).from(users);
   } catch (error) {
-    logger.error('Error fetching users', { error: error.message, stack: error.stack });
+    logger.error('Error fetching users', {
+      error: error.message,
+      stack: error.stack,
+    });
     throw new Error('Failed to fetch users');
   }
 };
 
-export const getUserById = async (id) => {
+export const getUserById = async id => {
   try {
-    const [user] = await db.select(userSelectProjection).from(users).where(eq(users.id, id)).limit(1);
+    const [user] = await db
+      .select(userSelectProjection)
+      .from(users)
+      .where(eq(users.id, id))
+      .limit(1);
     return user || null;
   } catch (error) {
-    logger.error('Error fetching user by id', { error: error.message, stack: error.stack, userId: id });
+    logger.error('Error fetching user by id', {
+      error: error.message,
+      stack: error.stack,
+      userId: id,
+    });
     throw new Error('Failed to fetch user');
   }
 };
@@ -55,12 +66,16 @@ export const updateUser = async (id, updates) => {
     if (error.status === 404) {
       throw error;
     }
-    logger.error('Error updating user', { error: error.message, stack: error.stack, userId: id });
+    logger.error('Error updating user', {
+      error: error.message,
+      stack: error.stack,
+      userId: id,
+    });
     throw new Error('Failed to update user');
   }
 };
 
-export const deleteUser = async (id) => {
+export const deleteUser = async id => {
   try {
     const existingUser = await getUserById(id);
 
@@ -70,13 +85,20 @@ export const deleteUser = async (id) => {
       throw notFoundError;
     }
 
-    const [deletedUser] = await db.delete(users).where(eq(users.id, id)).returning(userSelectProjection);
+    const [deletedUser] = await db
+      .delete(users)
+      .where(eq(users.id, id))
+      .returning(userSelectProjection);
     return deletedUser;
   } catch (error) {
     if (error.status === 404) {
       throw error;
     }
-    logger.error('Error deleting user', { error: error.message, stack: error.stack, userId: id });
+    logger.error('Error deleting user', {
+      error: error.message,
+      stack: error.stack,
+      userId: id,
+    });
     throw new Error('Failed to delete user');
   }
 };

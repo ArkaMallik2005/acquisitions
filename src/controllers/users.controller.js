@@ -5,7 +5,10 @@ import {
   updateUser as updateUserService,
   deleteUser as deleteUserService,
 } from '../services/users.service.js';
-import { updateUserSchema, userIdSchema } from '../validations/users.validation.js';
+import {
+  updateUserSchema,
+  userIdSchema,
+} from '../validations/users.validation.js';
 export const fetchAllUsers = async (req, res, next) => {
   try {
     logger.info('Getting users...');
@@ -18,7 +21,10 @@ export const fetchAllUsers = async (req, res, next) => {
       count: allUsers.length,
     });
   } catch (error) {
-    logger.error('Error in getUsers controller', { error: error.message, stack: error.stack });
+    logger.error('Error in getUsers controller', {
+      error: error.message,
+      stack: error.stack,
+    });
     next(error);
   }
 };
@@ -47,7 +53,10 @@ export const getUserById = async (req, res, next) => {
       user,
     });
   } catch (error) {
-    logger.error('Error in getUserById controller', { error: error.message, stack: error.stack });
+    logger.error('Error in getUserById controller', {
+      error: error.message,
+      stack: error.stack,
+    });
     next(error);
   }
 };
@@ -79,14 +88,22 @@ export const updateUser = async (req, res, next) => {
     const isSelfUpdate = requesterId === targetUserId;
 
     if (!isAdmin && !isSelfUpdate) {
-      return res.status(403).json({ error: 'You can only update your own profile' });
+      return res
+        .status(403)
+        .json({ error: 'You can only update your own profile' });
     }
 
     if (updates.role && !isAdmin) {
-      return res.status(403).json({ error: 'Only admin users can update user roles' });
+      return res
+        .status(403)
+        .json({ error: 'Only admin users can update user roles' });
     }
 
-    logger.info('Updating user...', { targetUserId, requesterId, requesterRole });
+    logger.info('Updating user...', {
+      targetUserId,
+      requesterId,
+      requesterRole,
+    });
     const updatedUser = await updateUserService(targetUserId, updates);
 
     return res.status(200).json({
@@ -97,7 +114,10 @@ export const updateUser = async (req, res, next) => {
     if (error.status === 404) {
       return res.status(404).json({ error: error.message });
     }
-    logger.error('Error in updateUser controller', { error: error.message, stack: error.stack });
+    logger.error('Error in updateUser controller', {
+      error: error.message,
+      stack: error.stack,
+    });
     next(error);
   }
 };
@@ -124,10 +144,16 @@ export const deleteUser = async (req, res, next) => {
     const isSelfDelete = requesterId === targetUserId;
 
     if (!isAdmin && !isSelfDelete) {
-      return res.status(403).json({ error: 'You can only delete your own account' });
+      return res
+        .status(403)
+        .json({ error: 'You can only delete your own account' });
     }
 
-    logger.info('Deleting user...', { targetUserId, requesterId, requesterRole });
+    logger.info('Deleting user...', {
+      targetUserId,
+      requesterId,
+      requesterRole,
+    });
     const deletedUser = await deleteUserService(targetUserId);
 
     return res.status(200).json({
@@ -138,7 +164,10 @@ export const deleteUser = async (req, res, next) => {
     if (error.status === 404) {
       return res.status(404).json({ error: error.message });
     }
-    logger.error('Error in deleteUser controller', { error: error.message, stack: error.stack });
+    logger.error('Error in deleteUser controller', {
+      error: error.message,
+      stack: error.stack,
+    });
     next(error);
   }
 };

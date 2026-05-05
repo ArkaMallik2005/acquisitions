@@ -10,11 +10,13 @@ if (!databaseUrl) {
 }
 
 const parsedUrl = new URL(databaseUrl);
-const isNeonLocalHost = ['neon-local', 'localhost', '127.0.0.1'].includes(parsedUrl.hostname);
+const isNeonLocalHost = ['neon-local', 'localhost', '127.0.0.1'].includes(
+  parsedUrl.hostname
+);
 
 if (process.env.NODE_ENV === 'development') {
   const port = parsedUrl.port || '5432';
-  neonConfig.fetchEndpoint = `http://neon-local:5432/sql`;
+  neonConfig.fetchEndpoint = 'http://neon-local:5432/sql';
   neonConfig.useSecureWebSocket = false;
   neonConfig.poolQueryViaFetch = true;
 }

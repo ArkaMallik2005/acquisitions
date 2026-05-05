@@ -5,7 +5,7 @@ import { db } from '../config/database.js';
 import { users } from '../models/users.model.js';
 
 // 🔐 Hash password
-export const hashPassword = async (password) => {
+export const hashPassword = async password => {
   try {
     return await bcrypt.hash(password, 10);
   } catch (error) {
@@ -44,7 +44,6 @@ export const authenticateUser = async ({ email, password }) => {
     }
 
     return user;
-
   } catch (error) {
     logger.error('Error authenticating user:', error);
     throw error;
@@ -72,19 +71,18 @@ export const createUser = async ({ name, email, password, role = 'user' }) => {
         name,
         email,
         password: hashedPassword, // ✅ correct mapping
-        role
+        role,
       })
       .returning({
         id: users.id,
         name: users.name,
         email: users.email,
         role: users.role,
-        created_at: users.created_at
+        created_at: users.created_at,
       });
 
     logger.info(`User ${email} created successfully with ID ${newUser.id}`);
     return newUser;
-
   } catch (error) {
     logger.error('Error creating user:', error);
     throw error;
