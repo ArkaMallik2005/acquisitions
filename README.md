@@ -60,3 +60,5 @@ Neon Local branch behavior:
 - Do not hardcode credentials in code or compose files.
 - Keep `.env.development` and `.env.production` out of version control.
 - For local tools running outside Docker, you can use `postgres://neon:npg@localhost:5432/neondb` with Neon Local.
+
+Testing CI/CD pipelines 
